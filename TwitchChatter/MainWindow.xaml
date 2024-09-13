@@ -1,0 +1,186 @@
+﻿<Window x:Class="TwitchChatter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TwitchChatter"
+        mc:Ignorable="d"
+        Title="MainWindow" Width="320" Height="480"
+        MinWidth="320" MinHeight="480" WindowStartupLocation="Manual"
+        WindowStyle="None" AllowsTransparency="True" AllowDrop="False"
+        ResizeMode="CanResizeWithGrip" Topmost="True" SizeChanged="Window_SizeChanged">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <Style x:Key="ScrollThumbs" TargetType="{x:Type Thumb}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate>
+                            <Grid>
+                                <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" 
+                                           Height="Auto" Fill="Transparent"/>
+                                <Border x:Name="Rectangle1" CornerRadius="10 0 0 10" HorizontalAlignment="Stretch" 
+                                        VerticalAlignment="Stretch" Width="Auto" Height="Auto" 
+                                        Background="{TemplateBinding Background}"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="{x:Type ScrollBar}" TargetType="{x:Type ScrollBar}">
+                <Setter Property="Foreground" Value="#FF5F5F5F"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Width" Value="10"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ScrollBar}">
+                            <Grid x:Name="GridRoot" Width="10" Background="{x:Null}">
+                                <Track x:Name="PART_Track" Grid.Row="0" IsDirectionReversed="true" Focusable="False">
+                                    <Track.Thumb>
+                                        <Thumb x:Name="Thumb" Background="{TemplateBinding Foreground}" 
+                                               Style="{DynamicResource ScrollThumbs}"/>
+                                    </Track.Thumb>
+                                    <Track.IncreaseRepeatButton>
+                                        <RepeatButton x:Name="PageUp" Command="ScrollBar.PageDownCommand" Opacity="0" Focusable="False"/>
+                                    </Track.IncreaseRepeatButton>
+                                    <Track.DecreaseRepeatButton>
+                                        <RepeatButton x:Name="PageDown" Command="ScrollBar.PageUpCommand" Opacity="0" Focusable="False"/>
+                                    </Track.DecreaseRepeatButton>
+                                </Track>
+                            </Grid>
+
+                            <ControlTemplate.Triggers>
+                                <Trigger SourceName="Thumb" Property="IsMouseOver" Value="true">
+                                    <Setter Value="#FF7F7F7F" 
+                                            TargetName="Thumb" Property="Background"/>
+                                </Trigger>
+                                <Trigger SourceName="Thumb" Property="IsDragging" Value="true">
+                                    <Setter Value="#FFAFAFAF" TargetName="Thumb" Property="Background"/>
+                                </Trigger>
+
+                                <Trigger Property="IsEnabled" Value="false">
+                                    <Setter TargetName="Thumb" Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+    
+    <Grid Background="#FF18181B">
+        <ScrollViewer Margin="0,32,0,48" UseLayoutRounding="False">
+            <StackPanel x:Name="messageStackPanel" VerticalAlignment="Bottom" CanHorizontallyScroll="False">
+                <StackPanel.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Padding" Value="10, 2, 10, 2"/>
+                        <Setter Property="TextWrapping" Value="Wrap"/>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="FontSize" Value="14"/>
+                        <Setter Property="FontFamily" Value="Bahnscrift Light"/>
+                    </Style>
+                </StackPanel.Resources>
+            </StackPanel>
+            
+        </ScrollViewer>
+        <TextBox x:Name="chatBox"
+                 HorizontalAlignment="Stretch" Margin="10,0,10,10" VerticalAlignment="Bottom"
+                 TextWrapping="Wrap" Text="" Height="40"
+                 BorderThickness="2" Padding="10"
+                 Foreground="#FFFFFFFF" Background="#FF464649" BorderBrush="Transparent"
+                 KeyDown="chatBox_KeyDown">
+            <TextBox.Style>
+                <Style TargetType="{x:Type TextBox}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type TextBoxBase}">
+                                <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                    <Grid>
+                                        <TextBlock x:Name="placeholder" Text="Send a message" VerticalAlignment="Center" Opacity="0.5" Padding="10"/>
+                                        <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" SnapsToDevicePixels="True"/>
+                                    </Grid>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Opacity" TargetName="border" Value="0.56"/>
+                                    </Trigger>
+                                    <Trigger Property="IsKeyboardFocused" Value="True">
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <ColorAnimation Duration="0:0:0.1" To="#FFA970FF" Storyboard.TargetProperty="BorderBrush.Color"/>
+                                                    <ColorAnimation Duration="0:0:0.1" To="#FF000000" Storyboard.TargetProperty="Background.Color"/>
+                                                    <DoubleAnimation Duration="0:0:0.1" To="0.0" Storyboard.TargetName="placeholder" Storyboard.TargetProperty="Opacity"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                        <Trigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <ColorAnimation Duration="0:0:0.1" To="#FF464649" Storyboard.TargetProperty="BorderBrush.Color"/>
+                                                    <ColorAnimation Duration="0:0:0.1" To="#FF464649" Storyboard.TargetProperty="Background.Color"/>
+                                                    <DoubleAnimation Duration="0:0:0.1" To="0.5" Storyboard.TargetName="placeholder" Storyboard.TargetProperty="Opacity"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.ExitActions>
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsMouseOver" Value="True"/>
+                                            <Condition Property="IsKeyboardFocused" Value="False"/>
+                                        </MultiTrigger.Conditions>
+                                        <MultiTrigger.Setters>
+                                            <Setter Property="BorderBrush" TargetName="border" Value="#5E5E60"/>
+                                        </MultiTrigger.Setters>
+                                    </MultiTrigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TextBox.Style>
+            <TextBox.Resources>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="CornerRadius" Value="3"/>
+                </Style>
+            </TextBox.Resources>
+        </TextBox>
+        <Grid Height="32" VerticalAlignment="Top">
+            <Button Style="{StaticResource closeButtonStyle}"
+                    x:Name="closeButton"
+                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Width="59"  Height="37" Click="closeButton_Click"
+                    Foreground="Transparent" BorderBrush="Transparent" Margin="0,-5,-5,0">
+                <TextBlock Text="X" Foreground="White" Padding="0,5,5,0" FontFamily="Candara Light" FontSize="18"/>
+            </Button>
+
+            <Button x:Name="menuButton" HorizontalAlignment="Left" VerticalAlignment="Top" Width="40" Height="32" Click="menuButton_Click">
+                <Button.Style>
+                    <StaticResource ResourceKey="captionMenuButtonStyle"/>
+                </Button.Style>
+                <Button.ContextMenu>
+                    <ContextMenu Style="{StaticResource captionMenuStyle}">
+                        <MenuItem x:Name="connectMenuItem" Header="Connect" Style="{StaticResource captionMenuItemStyle}" Click="connectMenuItem_Click"/>
+                        <MenuItem Header="Clear Entries" Style="{StaticResource captionMenuItemStyle}" Click="clearEntriesMenuItem_Click"/>
+                        <MenuItem Header="Settings" Style="{StaticResource captionMenuItemStyle}" Click="settingsMenuItem_Click"/>
+
+                    </ContextMenu>
+                </Button.ContextMenu>
+                <Image Source="pack://application:,,,/data/captionIcon1.png" Width="16"/>
+            </Button>
+            <Button Style="{StaticResource captionButtonStyle}" x:Name="captionButton1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="40" Height="32" Margin="40,0,0,0" Click="captionButton1_Click">
+                <Image Source="pack://application:,,,/data/captionIcon2.png" Width="16"/>
+            </Button>
+            <Button Style="{StaticResource captionButtonStyle}" x:Name="captionButton2" HorizontalAlignment="Left" VerticalAlignment="Center" Width="40" Height="32" Margin="80,0,0,0" Click="captionButton2_Click">
+                <Image Source="pack://application:,,,/data/captionIcon3.png" Width="16"/>
+            </Button>
+            <Button Style="{StaticResource captionButtonStyle}" x:Name="captionButton3" HorizontalAlignment="Left" VerticalAlignment="Center" Width="40" Height="32" Margin="120,0,0,0" Click="captionButton4_Click">
+                <Image Source="pack://application:,,,/data/captionIcon5.png" Width="16"/>
+            </Button>
+            <Button Style="{StaticResource captionButtonStyle}" x:Name="captionButton4" HorizontalAlignment="Left" VerticalAlignment="Center" Width="40" Height="32" Margin="160,0,0,0" Click="captionButton3_Click">
+                <Image Source="pack://application:,,,/data/captionIcon4.png" Width="16"/>
+            </Button>
+        </Grid>
+    </Grid>
+</Window>
